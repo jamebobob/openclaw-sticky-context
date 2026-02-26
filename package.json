@@ -1,0 +1,30 @@
+{
+  "name": "sticky-context",
+  "version": "1.0.0",
+  "description": "Persistent context slots that survive compaction for OpenClaw agents",
+  "main": "index.ts",
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  },
+  "keywords": [
+    "openclaw",
+    "plugin",
+    "compaction",
+    "context",
+    "sticky",
+    "persistent",
+    "memory",
+    "agent"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamebobob/openclaw-sticky-context"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.32.0"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.2.0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "sticky-context",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "maxTotalChars": {
+        "type": "number",
+        "default": 2000,
+        "description": "Maximum total characters across all sticky slots (~500 tokens)"
+      },
+      "maxSlots": {
+        "type": "number",
+        "default": 10,
+        "description": "Maximum number of sticky slots"
+      },
+      "file": {
+        "type": "string",
+        "default": "sticky-context.json",
+        "description": "Storage file path relative to workspace directory"
+      },
+      "headerLabel": {
+        "type": "string",
+        "default": "STICKY CONTEXT (survives compaction)",
+        "description": "Header label shown above sticky content in the system prompt"
+      }
+    }
+  },
+  "uiHints": {
+    "maxTotalChars": {
+      "label": "Max Total Characters",
+      "placeholder": "2000"
+    },
+    "maxSlots": {
+      "label": "Max Slots",
+      "placeholder": "10"
+    },
+    "file": {
+      "label": "Storage File",
+      "placeholder": "sticky-context.json"
+    }
+  }
+}
