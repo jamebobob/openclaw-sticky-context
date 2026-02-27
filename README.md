@@ -89,6 +89,50 @@ openclaw plugins list          # Should show sticky-context ✓
 
 Send `/sticky` in chat to see current slots.
 
+## Recommended Setup
+
+After installing, create a pinned **task-discipline** slot. Without this, your
+agent will update the `active-task` slot inconsistently — or clear it to
+something like "No active build task" — and then go idle after compaction
+because it no longer knows what it was doing.
+
+This standing order forces the agent to keep its task state current:
+
+```json
+{
+  "key": "task-discipline",
+  "content": "STANDING ORDER: When working on any multi-step task, immediately run sticky_set(\"active-task\", \"<task description, file paths, current step, next step>\"). Update the slot after each step. This is your compaction insurance — without it you go idle after context compaction and have to be reminded. No exceptions.",
+  "priority": 95,
+  "pinned": true
+}
+```
+
+You can tell your agent to create this, or add it directly to
+`sticky-context.json` in your workspace:
+
+```bash
+python3 -c "
+import json, datetime
+path = '$HOME/.openclaw/workspace/sticky-context.json'
+with open(path) as f:
+    data = json.load(f)
+now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z')
+data['slots']['task-discipline'] = {
+    'content': 'STANDING ORDER: When working on any multi-step task, immediately run sticky_set(\"active-task\", \"<task description, file paths, current step, next step>\"). Update the slot after each step. This is your compaction insurance — without it you go idle after context compaction and have to be reminded. No exceptions.',
+    'priority': 95,
+    'pinned': True,
+    'created': now,
+    'updated': now
+}
+with open(path, 'w') as f:
+    json.dump(data, f, indent=2)
+print('Done')
+"
+```
+
+Priority 95 puts it just below safety constraints (100) so it's always near
+the top of the injected context. Pinning it prevents the agent from deleting it.
+
 ## Usage
 
 ### Agent tools (used by the AI agent during conversation)
