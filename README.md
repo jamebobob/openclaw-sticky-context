@@ -2,6 +2,8 @@
 
 Persistent context slots that survive compaction. Your safety rules, identity, and task state injected into the system prompt every turn, invisible to compaction, because the system prompt is never part of conversation history.
 
+Used in [openclaw-agent-privacy](https://github.com/jamebobob/openclaw-agent-privacy) for redacting operational details from group chat agents. Works standalone for any compaction-sensitive context.
+
 ## The Problem
 
 When OpenClaw compacts a conversation, it summarizes older history to free up context window space. Anything the model was told in conversation (safety rules, constraints, active task state, identity context) can be silently lost in that summary. Your agent keeps running without knowing anything disappeared.
