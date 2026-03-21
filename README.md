@@ -123,6 +123,8 @@ Create a pinned task-discipline slot. Without this, your agent will update its a
 
 Priority 95 puts it just below safety constraints (100+) so it's always near the top. Pinning prevents the agent from deleting it.
 
+See also **[Inner Voice Protocol](INNER-VOICE-PROTOCOL.md)** — a production protocol for AI self-reflection using a single sticky slot. Covers the specificity test, multi-agent access patterns, and failure modes from three weeks of deployment.
+
 ---
 
 ## Tools
