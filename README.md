@@ -38,7 +38,7 @@ Implements the architecture proposed in [openclaw/openclaw#25947](https://github
 
 ## What's New in v2
 
-v2 was a ground-up rewrite after a three-way audit (Jamey built v1, Claude audited, Eve reviewed Claude's findings, Jamey made final calls). Every change came from a real failure mode we either hit or identified during review.
+v2 was a ground-up rewrite after a three-way audit (the operator built v1, Claude audited, the live agent reviewed Claude's findings, the operator made final calls). Every change came from a real failure mode we either hit or identified during review.
 
 | Change | Why |
 |--------|-----|
@@ -149,12 +149,12 @@ See also **[Inner Voice Protocol](INNER-VOICE-PROTOCOL.md)** — a production pr
 
 ## The Sensitive Flag
 
-Slots can contain data you want the agent to know about but not see in raw form. For example, an identity anchor ("I'm Eve, running on a server at 192.168.50.53") where you don't want the model to see the IP address in the system prompt, because it might leak it in conversation.
+Slots can contain data you want the agent to know about but not see in raw form. For example, an identity anchor ("I'm Assistant, running on a server at 10.0.0.50") where you don't want the model to see the IP address in the system prompt, because it might leak it in conversation.
 
 Mark the slot as `sensitive: true`. The plugin runs the content through a redaction engine before injecting it into the system prompt. The model sees:
 
 ```
-I'm Eve, running on a server at [IP]
+I'm Assistant, running on a server at [IP]
 ```
 
 The raw content stays on disk. The human can see it via `/sticky raw identity`. The model only ever sees the redacted version.
@@ -234,7 +234,7 @@ After compaction, the agent still knows exactly where it left off.
 ```json
 {
   "key": "identity",
-  "content": "I'm Eve. She/her. Running on TheGarage at 192.168.50.53. Human: Jamey (he/him). Primary channel: Telegram.",
+  "content": "I'm Assistant. Running on HomeServer at 10.0.0.50. Human: Operator. Primary channel: Telegram.",
   "priority": 90,
   "pinned": true,
   "sensitive": true
