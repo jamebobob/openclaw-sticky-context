@@ -209,7 +209,7 @@ function getConfig(cfg: any, logger: any): PluginConfig {
   };
 }
 
-function renderSlots(store: StickyStore, cfg: PluginConfig): string {
+function renderSlots(store: StickyStore, cfg: PluginConfig, skipSensitive = false): string {
   const entries = sortedEntries(store);
   if (entries.length === 0) return "";
 
@@ -220,6 +220,7 @@ function renderSlots(store: StickyStore, cfg: PluginConfig): string {
     "",
   ];
   for (const [key, slot] of entries) {
+    if (skipSensitive && slot.sensitive) continue;
     const pin = slot.pinned ? " 📌" : "";
     const content = slot.sensitive
       ? redact(slot.content, cfg.redactPatterns)
@@ -254,10 +255,11 @@ const stickyContextPlugin = {
     //   3. Runs at correct priority in the prompt build pipeline
     api.on(
       "before_prompt_build",
-      (_event: any, _ctx: any) => {
+      (_event: any, ctx: any) => {
         const store = loadStore(resolveStorePath(api.config), logger);
         if (!store) return {};
-        const content = renderSlots(store, cfg);
+        const isSocial = typeof ctx?.agentId === "string" && ctx.agentId.startsWith("social-");
+        const content = renderSlots(store, cfg, isSocial);
         if (!content) return {};
         return { appendSystemContext: content };
       },
@@ -471,7 +473,7 @@ const stickyContextPlugin = {
     });
 
     // ── sticky_get ───────────────────────────────────────────────
-    api.registerTool({
+    api.registerTool((toolCtx) => ({
       name: "sticky_get",
       description:
         "Read sticky context slots. With key: read one slot. Without key: list all slots.",
@@ -486,15 +488,21 @@ const stickyContextPlugin = {
           return { content: [{ type: "text", text: CORRUPT_STORE_MSG }] };
         }
 
+        const isSocial = typeof toolCtx?.agentId === "string" && toolCtx.agentId.startsWith("social-");
+
         if (params.key) {
           const key = sanitizeKey(params.key);
           const slot = store.slots[key];
-          if (!slot) {
+          // For social agents, sensitive slots don't exist
+          if (!slot || (isSocial && slot.sensitive)) {
+            const visibleKeys = Object.keys(store.slots).filter(
+              (k) => !(isSocial && store.slots[k].sensitive),
+            );
             return {
               content: [
                 {
                   type: "text",
-                  text: `Slot "${key}" not found. Available: ${Object.keys(store.slots).join(", ") || "(none)"}`,
+                  text: `Slot "${key}" not found. Available: ${visibleKeys.join(", ") || "(none)"}`,
                 },
               ],
             };
@@ -512,8 +520,10 @@ const stickyContextPlugin = {
             ],
           };
         }
-        const entries = sortedEntries(store);
-        const total = totalChars(store);
+        const entries = sortedEntries(store).filter(
+          ([, s]) => !(isSocial && s.sensitive),
+        );
+        const total = entries.reduce((sum, [, s]) => sum + s.content.length, 0);
         const summary = entries.map(
           ([k, s]) =>
             `${k}${slotFlags(s)} (${s.content.length} chars, priority ${s.priority})`,
@@ -532,7 +542,7 @@ const stickyContextPlugin = {
           ],
         };
       },
-    });
+    }));
 
     // ── sticky_delete ────────────────────────────────────────────
     api.registerTool({

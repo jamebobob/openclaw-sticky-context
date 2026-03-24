@@ -44,7 +44,7 @@ v2 was a ground-up rewrite after a three-way audit (the operator built v1, Claud
 |--------|-----|
 | Hook: `before_prompt_build` + `appendSystemContext` | v1 used `before_agent_start` + `prependContext`, which put content in the user prompt. If an operator disables prompt injection, v1 content silently disappeared. v2 uses the correct hook for system-level content. |
 | Atomic writes | v1 wrote directly to the JSON file. A crash mid-write would corrupt it and break every future session. v2 writes to a `.tmp` file then renames (atomic on POSIX). |
-| `sensitive: true` flag | Slots containing IPs, tokens, or secrets get redacted before injection. The raw content stays on disk (for the human), but the model only sees `[IP]`, `[TOKEN]`, etc. |
+| `sensitive: true` flag | Slots containing IPs, tokens, or secrets get redacted before injection. The raw content stays on disk (for the human), but the model only sees `[IP]`, `[TOKEN]`, etc. For multi-agent setups, `social-*` agents never see sensitive slots at all — they are fully omitted from system prompt injection and return "not found" via `sticky_get`. |
 | One-way ratchet | Agent can set `pinned: true` or `sensitive: true` but can never set them back to `false`. This prevents an agent from accidentally (or deliberately) downgrading its own safety constraints. |
 | Pinned slots fully immutable | v1 pinned slots couldn't be deleted but could be modified. v2 pinned slots can't be touched at all by the agent. Owner uses `/sticky delete` or edits the JSON directly. |
 | `/sticky raw` and `/sticky delete` | Owner-level commands. `raw` shows the unredacted content of a sensitive slot. `delete` bypasses the pin restriction. |
@@ -132,7 +132,7 @@ See also **[Inner Voice Protocol](INNER-VOICE-PROTOCOL.md)** — a production pr
 | Tool | Description |
 |------|-------------|
 | `sticky_set` | Create or update a slot. Params: `key`, `content`, `priority?`, `pinned?`, `sensitive?` |
-| `sticky_get` | Read one slot (by key) or list all slots (no key). Sensitive slots return redacted content. |
+| `sticky_get` | Read one slot (by key) or list all slots (no key). Sensitive slots return redacted content for non-social agents. `social-*` agents get "not found" (sensitive slots are fully hidden, not just redacted). |
 | `sticky_delete` | Remove a slot. Cannot delete pinned slots. |
 
 **Key sanitization:** Slot keys are automatically lowercased, non-alphanumeric characters (except `-` and `_`) are replaced with hyphens, and keys are capped at 64 characters. For example, `"My Active Task"` becomes `"my-active-task"`.
@@ -158,6 +158,8 @@ I'm Assistant, running on a server at [IP]
 ```
 
 The raw content stays on disk. The human can see it via `/sticky raw identity`. The model only ever sees the redacted version.
+
+**Multi-agent behavior:** For agents whose ID starts with `social-`, sensitive slots are completely hidden — not regex-redacted, but omitted entirely. The `before_prompt_build` hook skips them, and `sticky_get` returns "not found" (identical to a nonexistent slot, so the social agent has no way to know the slot exists). This prevents content that doesn't match any regex pattern from leaking to social agents. Non-social agents (including the main agent) continue to see regex-redacted content as before.
 
 **Design note:** Sensitive slots show the 🔒 icon in tool output and `/sticky` listings, but the injected system prompt only shows 📌 for pinned slots, not 🔒 for sensitive ones. This is a rendering choice, not a security boundary. The model already knows a slot is sensitive through `sticky_get` results and tool confirmations.
 
