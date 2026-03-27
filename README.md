@@ -370,7 +370,7 @@ openclaw config get tools.allow
 
 ## Credits
 
-v1 built by Jamey ([@jamebobob](https://github.com/jamebobob)). v2 rewrite audited by Claude, reviewed by Eve, shipped by Jamey. The three-way review process (build, audit, counter-review) caught bugs that none of us would have found alone.
+v1 built by [@jamebobob](https://github.com/jamebobob). v2 rewrite audited by Claude, counter-reviewed by the live agent, shipped by jamebobob. The three-way review process (build, audit, counter-review) caught bugs that none of us would have found alone.
 
 The sensitive slot redaction feature was inspired by [darfaz](https://github.com/darfaz)'s suggestion on [#25947](https://github.com/openclaw/openclaw/issues/25947) about adding a redaction pass before injection for production deployments.
 
