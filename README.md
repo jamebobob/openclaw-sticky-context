@@ -1,3 +1,5 @@
+> **Archived April 2026.** Built on [OpenClaw](https://github.com/openclaw/openclaw) and moved off of it when the active work migrated to [Hermes](https://github.com/hermes-agent/hermes-agent). The design ideas in this repo might still be useful. The platform wiring is obsolete.
+
 # openclaw-sticky-context
 
 Persistent context slots that survive compaction. Your safety rules, identity, and task state injected into the system prompt every turn, invisible to compaction, because the system prompt is never part of conversation history.
